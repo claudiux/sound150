@@ -29,11 +29,10 @@ function convertGdkIndex(monitorIndex) {
     return monitorIndex;
 };
 
-//~ try {
 var OsdWindow = GObject.registerClass(
 class OsdWindow extends Clutter.Actor {
-    _init(monitorIndex) {
-        super._init({
+    constructor(monitorIndex) {
+        super({
             x_expand: true,
             y_expand: true,
             x_align: Clutter.ActorAlign.CENTER,
@@ -125,7 +124,7 @@ class OsdWindow extends Clutter.Actor {
         if (this._hideTimeoutId)
             GLib.source_remove(this._hideTimeoutId);
         this._hideTimeoutId = GLib.timeout_add(
-            GLib.PRIORITY_DEFAULT, HIDE_TIMEOUT, this._hide.bind(this));
+            GLib.PRIORITY_DEFAULT, HIDE_TIMEOUT, () => { this._hide() });
         GLib.Source.set_name_by_id(this._hideTimeoutId, '[cinnamon] this._hide');
     }
 
@@ -159,15 +158,14 @@ class OsdWindow extends Clutter.Actor {
     }
 }
 );
-//~ } catch(e) {};
 
 var OsdWindowManager = class {
     constructor() {
         this._osdWindows = [];
 
-        Main.layoutManager.connect('monitors-changed', this._layoutChanged.bind(this));
+        Main.layoutManager.connect('monitors-changed', () => { this._layoutChanged() });
         this._osdSettings = new Gio.Settings({ schema_id: "org.cinnamon" });
-        this._osdSettings.connect("changed::show-media-keys-osd", this._layoutChanged.bind(this));
+        this._osdSettings.connect("changed::show-media-keys-osd", () => { this._layoutChanged() });
 
         this._layoutChanged();
     }
